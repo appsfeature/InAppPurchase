@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
                     querySkuDetails(); //query for products
                     List<Purchase> purchasesList = queryPurchases(); //query for purchases
                     processPurchases(purchasesList);
+
+                    updatePriceInUi();
                 }
             }
 
@@ -73,6 +75,25 @@ public class MainActivity extends AppCompatActivity {
                 //here when something went wrong, e.g. no internet connection
             }
         });
+    }
+
+    private void updatePriceInUi() {
+        List<String> skuList = new ArrayList<>();
+        skuList.add(SkuConstant.ITEM_TO_BUY_SKU_ID);
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+
+        mBillingClient.querySkuDetailsAsync(params.build(),
+                new SkuDetailsResponseListener() {
+                    @Override
+                    public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {
+                        for (SkuDetails detail : skuDetailsList) {
+                            if (detail.getSku().equals(SkuConstant.ITEM_TO_BUY_SKU_ID)) {
+                                mBuyButton.setText("Buy ("+detail.getPrice()+")");
+                            }
+                        }
+                    }
+                });
     }
 
     private void querySkuDetails() {
